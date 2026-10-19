@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "com.airsonic.demo"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.airsonic.demo"
         minSdk = 29
-        targetSdk = 33
-        versionCode = 80
-        versionName = "1.0.0"
+        targetSdk = 35
+        versionCode = 81
+        versionName = "1.0.1"
     }
 
     // CI 用 GitHub Secrets 注入的密钥签名(发布)；本地无密钥时回退到 debug 签名。
