@@ -56,12 +56,17 @@ class SystemAudioCapture(
 
     @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.Q)
-    fun start(projection: MediaProjection): Boolean {
-        val config = AudioPlaybackCaptureConfiguration.Builder(projection)
-            .addMatchingUsage(AudioAttributes.USAGE_MEDIA)
-            .addMatchingUsage(AudioAttributes.USAGE_GAME)
-            .addMatchingUsage(AudioAttributes.USAGE_UNKNOWN)
-            .build()
+    fun start(projection: MediaProjection, targetUid: Int? = null): Boolean {
+        val configBuilder = AudioPlaybackCaptureConfiguration.Builder(projection)
+        if (targetUid != null) {
+            configBuilder.addMatchingUid(targetUid)
+        } else {
+            configBuilder
+                .addMatchingUsage(AudioAttributes.USAGE_MEDIA)
+                .addMatchingUsage(AudioAttributes.USAGE_GAME)
+                .addMatchingUsage(AudioAttributes.USAGE_UNKNOWN)
+        }
+        val config = configBuilder.build()
 
         val format = AudioFormat.Builder()
             .setEncoding(encoding)
