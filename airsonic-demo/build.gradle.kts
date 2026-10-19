@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.airsonic.demo"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.airsonic.demo"
