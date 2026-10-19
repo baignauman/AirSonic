@@ -554,6 +554,7 @@ private fun ScreenScaffold(nav: NavHostController, title: String, content: @Comp
     LaunchedEffect(title) { if (CastEngine.phase.value != CastPhase.CASTING) CastEngine.statusLine.value = "" }
     Column(
         Modifier.fillMaxSize()
+            .statusBarsPadding()
             .padding(horizontal = 20.dp).padding(top = 24.dp, bottom = 20.dp)
             .verticalScroll(rememberScrollState())
     ) {
