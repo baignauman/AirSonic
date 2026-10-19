@@ -13,6 +13,8 @@ import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
+import android.media.projection.MediaProjectionConfig
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -143,7 +145,14 @@ class StudioActivity : ComponentActivity() {
     }
 
     private fun launchProjection() {
-        projectionLauncher.launch(projectionManager.createScreenCaptureIntent())
+        // Audio-only capture needs the user's consent, but does not need Android's
+        // second app/window chooser. Request the default display on Android 14+.
+        val intent = if (Build.VERSION.SDK_INT >= 34) {
+            projectionManager.createScreenCaptureIntent(MediaProjectionConfig.createConfigForDefaultDisplay())
+        } else {
+            projectionManager.createScreenCaptureIntent()
+        }
+        projectionLauncher.launch(intent)
     }
 
     override fun onDestroy() {
