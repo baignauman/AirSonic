@@ -280,13 +280,13 @@ object L10n {
     private const val KEY = "lang"
 
     /** 当前语言（Compose 状态，切换即刷新 UI）。 */
-    val lang = mutableStateOf(Lang.ZH)
+    val lang = mutableStateOf(Lang.EN)
 
     /** 当前字符串表。 */
     val s: Strings get() = if (lang.value == Lang.EN) EN else ZH
 
     fun load(context: Context) {
-        val v = context.getSharedPreferences(PREF, Context.MODE_PRIVATE).getString(KEY, null)
+        val v = context.getSharedPreferences(PREF, Context.MODE_PRIVATE).getString(KEY, "en")
         lang.value = if (v == "en") Lang.EN else Lang.ZH
     }
 

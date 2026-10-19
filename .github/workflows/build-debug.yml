@@ -1,4 +1,3 @@
-
 name: Build Debug APK
 
 on:
@@ -6,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - 'feature/app-specific-audio-capture'
 
 permissions:
   contents: read
@@ -26,10 +26,10 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-         packages: 'platform-tools'
+          packages: "platform-tools"
 
-      - name: Install Android SDK packages
-        run: sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+      - name: Install Android platform and build tools
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
       - name: Build debug APK
         run: ./gradlew :airsonic-demo:assembleDebug --no-daemon

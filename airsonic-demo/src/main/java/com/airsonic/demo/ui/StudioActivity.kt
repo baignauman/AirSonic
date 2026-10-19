@@ -6,12 +6,15 @@ package com.airsonic.demo.ui
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
+import android.media.projection.MediaProjectionConfig
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -86,7 +89,7 @@ class StudioActivity : ComponentActivity() {
         projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         val actions = CastActions(
-            requestSystemAudioCast = { ensurePermThenProjection() },
+            requestSystemAudioCast = { chooseAudioApp() },
             requestScreenMirrorCast = {
                 // 已有录音权限直接录屏；没有先补权限（拒绝也继续，降级纯画面）
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
@@ -112,6 +115,28 @@ class StudioActivity : ComponentActivity() {
         }
     }
 
+    private fun chooseAudioApp() {
+        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        val apps = packageManager.queryIntentActivities(intent, 0)
+            .filter { it.activityInfo.packageName != packageName }
+            .distinctBy { it.activityInfo.packageName }
+            .sortedBy { it.loadLabel(packageManager).toString().lowercase() }
+        val labels = apps.map { it.loadLabel(packageManager).toString() }.toTypedArray()
+        if (apps.isEmpty()) {
+            CastEngine.statusLine.value = "No apps found"
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Choose app audio")
+            .setItems(labels) { _, index ->
+                CastEngine.selectedAudioAppUid.value = apps[index].activityInfo.applicationInfo.uid
+                CastEngine.selectedAudioAppName.value = labels[index]
+                ensurePermThenProjection()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     private fun ensurePermThenProjection() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             == PackageManager.PERMISSION_GRANTED
@@ -120,7 +145,14 @@ class StudioActivity : ComponentActivity() {
     }
 
     private fun launchProjection() {
-        projectionLauncher.launch(projectionManager.createScreenCaptureIntent())
+        // Audio-only capture needs the user's consent, but does not need Android's
+        // second app/window chooser. Request the default display on Android 14+.
+        val intent = if (Build.VERSION.SDK_INT >= 34) {
+            projectionManager.createScreenCaptureIntent(MediaProjectionConfig.createConfigForDefaultDisplay())
+        } else {
+            projectionManager.createScreenCaptureIntent()
+        }
+        projectionLauncher.launch(intent)
     }
 
     override fun onDestroy() {

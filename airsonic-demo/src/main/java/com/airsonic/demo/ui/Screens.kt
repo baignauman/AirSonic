@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -168,9 +169,9 @@ fun AppNav(actions: CastActions) {
 // ============ 开屏 ============
 @Composable
 fun SplashScreen(onDone: () -> Unit) {
-    var remain by remember { mutableStateOf(6) }
+    // Brief logo intro without a visible countdown.
     LaunchedEffect(Unit) {
-        while (remain > 0) { kotlinx.coroutines.delay(1000); remain-- }
+        kotlinx.coroutines.delay(1200)
         onDone()
     }
     Box(Modifier.fillMaxSize()) {
@@ -184,17 +185,6 @@ fun SplashScreen(onDone: () -> Unit) {
             Text("AirSonic", color = Aurora.TextPrimary, fontSize = 38.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(6.dp))
             Text(L10n.s.tagline, color = Aurora.TextSecondary, fontSize = 14.sp)
-        }
-        // 跳过倒计时（右上角，可点立即跳过）
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(20.dp)
-                .glass(radius = 18)
-                .clickable { onDone() }
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-        ) {
-            Text("${L10n.s.skip} ${remain}s", color = Aurora.TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -214,6 +204,7 @@ fun MainScreen(nav: NavHostController) {
     Box(Modifier.fillMaxSize()) {
         Column(
             Modifier.fillMaxSize()
+                .statusBarsPadding()
                 .blur(if (showDevices) 18.dp else 0.dp)   // 下拉设备时背景磨砂
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp).padding(top = 20.dp, bottom = 24.dp)
@@ -297,8 +288,7 @@ private fun MirrorHeroCard(animated: Boolean, onClick: () -> Unit) {
             Spacer(Modifier.height(4.dp))
             Text(L10n.s.mirrorSub, color = Color(0xCC071018), fontSize = 13.sp)
         }
-        Spacer(Modifier.width(14.dp))
-        // 原创 AirSonic 声波标识（深色，叠在品牌渐变上）
+        Spacer(Modifier.width(14.dp))        // 原创 AirSonic 声波标识（深色，叠在品牌渐变上）
         AirSonicLogo(
             modifier = Modifier.size(84.dp),
             animated = animated,
@@ -564,6 +554,7 @@ private fun ScreenScaffold(nav: NavHostController, title: String, content: @Comp
     LaunchedEffect(title) { if (CastEngine.phase.value != CastPhase.CASTING) CastEngine.statusLine.value = "" }
     Column(
         Modifier.fillMaxSize()
+            .statusBarsPadding()
             .padding(horizontal = 20.dp).padding(top = 24.dp, bottom = 20.dp)
             .verticalScroll(rememberScrollState())
     ) {
@@ -597,8 +588,7 @@ private fun CastZone() {
     }
     Spacer(Modifier.height(18.dp))
     when (phase) {
-        CastPhase.CASTING ->
-            if (CastEngine.isVideo.value) VideoControlBar(name)
+        CastPhase.CASTING ->            if (CastEngine.isVideo.value) VideoControlBar(name)
             else Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 CastingBar(name, started, spectrum) { CastEngine.stop() }
                 val codec = CastEngine.activeCodec.value
@@ -897,8 +887,7 @@ private fun UpdateRow() {
                 "success" -> {
                     if (cur.third != null) {
                         downloadedApk = cur.third; status = "available"
-                        Updater.installDownloadedApk(ctx, cur.third!!)
-                    } else status = "failed"
+                        Updater.installDownloadedApk(ctx, cur.third!!)                    } else status = "failed"
                 }
                 "failed" -> status = "failed"
             }
