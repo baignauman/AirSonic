@@ -1,4 +1,3 @@
-
 name: Build Debug APK
 
 on:
@@ -26,11 +25,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-        with:
-         packages: 'platform-tools, platforms;android-35, build-tools;35.0.0'
 
       - name: Install Android SDK packages
-        run: sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Build debug APK
         run: ./gradlew :airsonic-demo:assembleDebug --no-daemon
