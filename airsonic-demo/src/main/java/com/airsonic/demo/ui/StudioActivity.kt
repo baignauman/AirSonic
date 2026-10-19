@@ -6,6 +6,7 @@ package com.airsonic.demo.ui
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -86,7 +87,7 @@ class StudioActivity : ComponentActivity() {
         projectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         val actions = CastActions(
-            requestSystemAudioCast = { ensurePermThenProjection() },
+            requestSystemAudioCast = { chooseAudioApp() },
             requestScreenMirrorCast = {
                 // 已有录音权限直接录屏；没有先补权限（拒绝也继续，降级纯画面）
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
@@ -110,6 +111,28 @@ class StudioActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun chooseAudioApp() {
+        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        val apps = packageManager.queryIntentActivities(intent, 0)
+            .filter { it.activityInfo.packageName != packageName }
+            .distinctBy { it.activityInfo.packageName }
+            .sortedBy { it.loadLabel(packageManager).toString().lowercase() }
+        val labels = apps.map { it.loadLabel(packageManager).toString() }.toTypedArray()
+        if (apps.isEmpty()) {
+            CastEngine.statusLine.value = "No apps found"
+            return
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Choose app audio")
+            .setItems(labels) { _, index ->
+                CastEngine.selectedAudioAppUid.value = apps[index].activityInfo.applicationInfo.uid
+                CastEngine.selectedAudioAppName.value = labels[index]
+                ensurePermThenProjection()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun ensurePermThenProjection() {
