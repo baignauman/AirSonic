@@ -135,6 +135,9 @@ object CastEngine {
      *  与协程的结构化取消并存(协程靠 sessionJob.cancel())。 */
     @Volatile private var sessionGen = 0
     private var capture: SystemAudioCapture? = null
+    /** UID/name of the app selected for app-specific playback capture. */
+    val selectedAudioAppUid = mutableStateOf<Int?>(null)
+    val selectedAudioAppName = mutableStateOf<String?>(null)
     private var savedVolume: Int = -1
     private var httpServer: com.airsonic.sender.streaming.LocalMediaHttpServer? = null
     private var videoCtl: com.airsonic.sender.streaming.AirplayVideoController? = null
@@ -316,7 +319,7 @@ object CastEngine {
                     val pm = app.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                     val proj = pm.getMediaProjection(resultCode, data)
                     projection = proj
-                    SystemAudioCapture().takeIf { it.start(proj) }
+                    SystemAudioCapture().takeIf { it.start(proj, selectedAudioAppUid.value) }
                 } ?: run { fail(L10n.s.captureFail, gen); return@launch }
                 cap = cc; capture = cc
                 // Sonos：走 UPnP 实时流（不进 AirPlay）。投送时对「未知/Sonos/DLNA」型设备探 :1400 归位，
