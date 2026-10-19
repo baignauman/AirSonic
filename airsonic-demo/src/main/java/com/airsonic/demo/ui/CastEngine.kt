@@ -360,6 +360,7 @@ object CastEngine {
                 val (session, result) = pair
                 if (!isActive || !casting || gen != sessionGen) return@launch   // connect(PIN)期间可能已被接管
                 bindVolume(AirplayVolumeController(session), defaultPct = 50)
+                setVolume(20)
                 mutePhone(app)
                 onCastingStarted(device.name)
                 activeCodec.value = "${activeCodec.value}｜t=${device.type}｜h=${device.host}｜1400=$probeReason"
@@ -637,6 +638,9 @@ object CastEngine {
             } else {
                 bindVolume(gainCtl!!, defaultPct = 100)
             }
+            // Start system-audio casting at a quiet, predictable level even if the
+            // speaker remembers a louder volume from a previous session.
+            setVolume(20)
             // 提前暴露路由诊断：setUri 若超时也能看出控制端点/本机流地址是否合理（多网卡选错等）
             val ctlHost = controlUrl.removePrefix("http://").substringBefore("/")
             activeCodec.value = "${if (wav) "WAV" else "AAC"}｜…｜ctl=$ctlHost｜$localIp:$port"
